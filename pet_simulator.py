@@ -31,7 +31,13 @@ class Pet:
         self.animal_type = animal_type
 
     def __str__(self):
-        return f"{self.name} is a {self.animal_type}"
+        description = (
+            f"name: {self.name}"
+            + f"\nanimal_type: {self.animal_type}"
+            + f"\nhunger: {self.hunger}"
+            + f"\nhappiness: {self.happiness}"
+        )
+        return description
 
     def eat(self):
         self.hunger -= 10
