@@ -1,15 +1,38 @@
 {
-	"folders": [
-		{
-			"path": "."
-		}
-	],
-	"settings": {
-		"[python]": {
-			"editor.defaultFormatter": "ms-python.black-formatter"
-		},
-		"[jsonc]": {
-			"editor.defaultFormatter": "esbenp.prettier-vscode"
-		}
-	}
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {
+    "[python]": {
+      "editor.defaultFormatter": "ms-python.black-formatter"
+    },
+    "[jsonc]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "workbench.colorCustomizations": {
+      "activityBar.activeBackground": "#f198f3",
+      "activityBar.background": "#f198f3",
+      "activityBar.foreground": "#15202b",
+      "activityBar.inactiveForeground": "#15202b99",
+      "activityBarBadge.background": "#72700d",
+      "activityBarBadge.foreground": "#e7e7e7",
+      "commandCenter.border": "#15202b99",
+      "sash.hoverBorder": "#f198f3",
+      "statusBar.background": "#eb6aee",
+      "statusBar.foreground": "#15202b",
+      "statusBarItem.hoverBackground": "#e53ce9",
+      "statusBarItem.remoteBackground": "#eb6aee",
+      "statusBarItem.remoteForeground": "#15202b",
+      "titleBar.activeBackground": "#eb6aee",
+      "titleBar.activeForeground": "#15202b",
+      "titleBar.inactiveBackground": "#eb6aee99",
+      "titleBar.inactiveForeground": "#15202b99"
+    },
+    "peacock.color": "#eb6aee",
+    "[plaintext]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    }
+  }
 }
