@@ -10,5 +10,11 @@
   },
   "[python]": {
     "editor.defaultFormatter": "ms-python.black-formatter"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
   }
 }
