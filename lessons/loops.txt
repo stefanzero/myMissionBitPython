@@ -1,0 +1,4 @@
+add usage of 
+* range
+* enumerate in loop with index and value
+
