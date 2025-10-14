@@ -1,7 +1,7 @@
-from curses.textpad import rectangle
-import re
+from calendar import c
 from PIL import Image, ImageDraw
 import os
+import random
 
 
 def change_directory_to_script_directory():
@@ -35,20 +35,53 @@ def draw_circle(canvas, position, radius, color):
 def show_canvas(canvas):
     canvas.show()
 
+
 def save_canvas(canvas, filename):
-    canvas.save(filename)   
+    canvas.save(filename)
+
 
 def main():
     change_directory_to_script_directory()
-    canvas = create_canvas()
-    circle_position = (400, 400)
-    circle_radius = 100
-    circle_color = (255, 0, 0)
-    draw_circle(canvas, circle_position, circle_radius, circle_color)
-    rectangle_position = (200, 200)
-    rectangle_size = 100
-    rectangle_color = (0, 0, 255)
-    draw_rectangle(canvas, rectangle_position, rectangle_size, rectangle_color)
+    canvas_width = 1200
+    canvas_height = 800
+    canvas_color = (255, 255, 255)
+    canvas = create_canvas((canvas_width, canvas_height), canvas_color)
+    # circle_position = (400, 400)
+    # circle_radius = 100
+    # circle_color = (255, 0, 0)
+    # draw_circle(canvas, circle_position, circle_radius, circle_color)
+    num_circles = 10
+    for _ in range(num_circles):
+        circle_position = (
+            random.randint(0, canvas_width),
+            random.randint(0, canvas_height),
+        )
+        circle_radius = random.randint(0, 100)
+        circle_color = (
+            random.randint(0, 255),
+            random.randint(0, 255),
+            random.randint(0, 255),
+        )
+        draw_circle(canvas, circle_position, circle_radius, circle_color)
+
+    # rectangle_position = (200, 200)
+    # rectangle_size = 100
+    # rectangle_color = (0, 0, 255)
+    # draw_rectangle(canvas, rectangle_position, rectangle_size, rectangle_color)
+
+    num_rectangles = 10
+    for _ in range(num_rectangles):
+        rectangle_position = (
+            random.randint(0, canvas_width),
+            random.randint(0, canvas_height),
+        )
+        rectangle_size = random.randint(0, 100)
+        rectangle_color = (
+            random.randint(0, 255),
+            random.randint(0, 255),
+            random.randint(0, 255),
+        )
+        draw_rectangle(canvas, rectangle_position, rectangle_size, rectangle_color)
     show_canvas(canvas)
     file_name = "shapes.png"
     save_canvas(canvas, file_name)
