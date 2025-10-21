@@ -1,4 +1,4 @@
-import re
+import os
 from PIL import Image, ImageDraw
 import random
 
@@ -24,15 +24,45 @@ class Circle(ArtElement):
         # self.color = color
 
     def draw(self, image: Image):
-        pass
-        # draw = ImageDraw.Draw(image)
-        # draw.ellipse(
-        #     [
-        #         (self.x - self.radius, self.y - self.radius),
-        #         (self.x + self.radius, self.y + self.radius),
-        #     ],
-        #     fill=self.color,
-        # )
+        x = self.attributes["x"]
+        y = self.attributes["y"]
+        radius = self.attributes["radius"]
+        color = self.attributes["color"]
+        draw_context = ImageDraw.Draw(image)
+        draw_context.ellipse(
+            [
+                (x - radius, y - radius),
+                (x + radius, y + radius),
+            ],
+            fill=color,
+        )
+
+
+class Rectangle(ArtElement):
+    def __init__(self, x, y, width, height, color):
+        super().__init__({}, [])
+        self.attributes = {
+            "x": x,
+            "y": y,
+            "width": width,
+            "height": height,
+            "color": color,
+        }
+
+    def draw(self, image: Image):
+        x = self.attributes["x"]
+        y = self.attributes["y"]
+        width = self.attributes["width"]
+        height = self.attributes["height"]
+        color = self.attributes["color"]
+        draw_context = ImageDraw.Draw(image)
+        draw_context.rectangle(
+            [
+                (x, y),
+                (x + width, y + height),
+            ],
+            fill=color,
+        )
 
 
 class Canvas:
@@ -56,6 +86,12 @@ class Canvas:
 
     def save(self, filename):
         self.image.save(filename)
+
+
+def change_directory_to_script_directory():
+    script_path = os.path.abspath(__file__)
+    script_directory = os.path.dirname(script_path)
+    os.chdir(script_directory)
 
 
 def generate_random_circles(num_circles=10):
@@ -84,6 +120,7 @@ def draw_circles(canvas: Canvas = create_canvas(), circles: list[Circle] = []):
 
 
 if __name__ == "__main__":
+    change_directory_to_script_directory()
     canvas = create_canvas()
     circles = generate_random_circles(10)
     draw_circles(canvas, circles)
