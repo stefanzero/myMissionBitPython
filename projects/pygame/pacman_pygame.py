@@ -1,7 +1,7 @@
-from re import M
 import pygame
 import sys
 import os
+
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -14,6 +14,7 @@ CELL_SIZE = WIDTH // MAZE_WIDTH
 # Define the colors
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
+RED = (255, 0, 0)
 FPS = 60
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 # Clock to control the frame rate
@@ -141,6 +142,28 @@ def draw_maze(maze):
                 )
 
 
+def draw_dots(dots):
+    # Draw the maze dots
+    for row in range(MAZE_HEIGHT):
+        for col in range(MAZE_WIDTH):
+            if dots[row][col] == 0:
+                # Draw a dot
+                x = col * CELL_SIZE
+                y = row * CELL_SIZE
+                pygame.draw.circle(
+                    screen, RED, (x + CELL_SIZE // 2, y + CELL_SIZE // 2), 2
+                )
+
+
+def eat_dots(dots, player_rect):
+    i, j = get_maze_cell_from_pixel(player_rect.x, player_rect.y)
+    dot_found = False
+    if dots[j][i] == 0:
+        dot_found = True
+    dots[j][i] = 1
+    return dot_found
+
+
 def draw_pacman(player_rect):
     screen.blit(pacman, player_rect)
 
@@ -199,10 +222,13 @@ def run():
     running = True
     countdown_timer = 60
     player_speed = 2
+    score = 0
     game_started = False
     maze = create_maze()
+    dots = create_maze()
     player_rect = get_initial_player_rect()
     draw_maze(maze)
+    draw_dots(dots)
     draw_pacman(player_rect)
     # space_pressed = False
     pygame.display.flip()
@@ -224,10 +250,6 @@ def run():
                 if game_started:
                     game_started = True  # Set the flag to True to avoid calling start_screen repeatedly
                     continue  # Skip the rest of the loop until the game has started
-                elif event.key == pygame.K_SPACE:
-                    space_pressed = True
-            elif event.type == pygame.KEYUP and event.key == pygame.K_SPACE:
-                space_pressed = False
 
         keys = pygame.key.get_pressed()
 
@@ -256,6 +278,9 @@ def run():
             player_rect.x = x
             player_rect.y = y
             draw_maze(maze)
+            if eat_dots(dots, player_rect):
+                score += 10
+            draw_dots(dots)
             draw_pacman(player_rect)
             pygame.display.flip()
 
