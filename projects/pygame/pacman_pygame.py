@@ -1,3 +1,4 @@
+from re import M
 import pygame
 import sys
 import os
@@ -6,9 +7,9 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 # Initialize Pygame
 pygame.init()
-WIDTH, HEIGHT = 800, 800
-MAZE_WIDTH = 28
-MAZE_HEIGHT = 29
+WIDTH, HEIGHT = 1200, 1200
+MAZE_WIDTH = 32
+MAZE_HEIGHT = 32
 CELL_SIZE = WIDTH // MAZE_WIDTH
 # Define the colors
 BLACK = (0, 0, 0)
@@ -19,57 +20,116 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 clock = pygame.time.Clock()
 pacman = pygame.image.load("pacman.png")
 pacman = pygame.transform.scale(pacman, (CELL_SIZE, CELL_SIZE))
-# player_rect = pygame.Rect(WIDTH // 2 - 25, 10, 50, 50)
-player_rect = pygame.Rect((WIDTH - CELL_SIZE) // 25, CELL_SIZE, CELL_SIZE, CELL_SIZE)
-arrows = [
-    pygame.K_RIGHT,
-    pygame.K_LEFT,
-    pygame.K_UP,
-    pygame.K_DOWN,
-]
+
+
+def get_initial_player_rect():
+    """
+    initial pacman position is i = 2, j = 1
+    """
+    i0 = 2
+    j0 = 1
+    x0 = i0 * CELL_SIZE
+    y0 = j0 * CELL_SIZE
+    player_rect = pygame.Rect(x0, y0, CELL_SIZE, CELL_SIZE)
+    # player_rect = pygame.Rect((WIDTH - CELL_SIZE) // 25, CELL_SIZE, CELL_SIZE, CELL_SIZE)
+    return player_rect
+
+
+def create_maze():
+    # Create a matrix of 1s using a list comprehension
+    maze = [[1] * MAZE_WIDTH for _ in range(MAZE_HEIGHT)]
+    """
+    draw horizontal spaces
+    """
+    for i in range(2, 14):
+        maze[1][i] = 0
+        maze[1][14 + i] = 0
+        maze[20][i] = 0
+        maze[20][14 + i] = 0
+    for i in range(2, 28):
+        maze[5][i] = 0
+        maze[29][i] = 0
+    for i in range(2, 8):
+        maze[8][i] = 0
+        # maze[8][20 + i] = 0
+        maze[8][29 - i] = 0
+    for i in range(10, 14):
+        maze[8][i] = 0
+        # maze[8][6 + i] = 0
+        maze[8][29 - i] = 0
+    for i in range(10, 20):
+        maze[11][i] = 0
+        maze[17][i] = 0
+    for i in range(2, 11):
+        maze[14][i] = 0
+        maze[14][17 + i] = 0
+    for i in range(2, 14):
+        maze[20][i] = 0
+        maze[20][29 - i] = 0
+    for i in range(2, 5):
+        maze[23][i] = 0
+        maze[23][29 - i] = 0
+    for i in range(7, 23):
+        maze[23][i] = 0
+    for i in range(2, 8):
+        maze[26][i] = 0
+        maze[26][29 - i] = 0
+    for i in range(10, 14):
+        maze[26][i] = 0
+        maze[26][29 - i] = 0
+    for i in range(2, 28):
+        maze[29][i] = 0
+
+    """
+    draw vertical spaces
+    """
+    for j in range(1, 9):
+        maze[j][2] = 0
+        maze[j][27] = 0
+    for j in range(1, 27):
+        maze[j][7] = 0
+        maze[j][22] = 0
+    for j in range(1, 6):
+        maze[j][13] = 0
+        maze[j][16] = 0
+    for j in range(5, 9):
+        maze[j][10] = 0
+        maze[j][19] = 0
+    for j in range(8, 12):
+        maze[j][13] = 0
+        maze[j][16] = 0
+    for j in range(11, 21):
+        maze[j][10] = 0
+        maze[j][19] = 0
+    for j in range(20, 24):
+        maze[j][2] = 0
+        maze[j][13] = 0
+        maze[j][16] = 0
+        maze[j][27] = 0
+    for j in range(23, 27):
+        maze[j][4] = 0
+        maze[j][10] = 0
+        maze[j][19] = 0
+        maze[j][25] = 0
+    for j in range(26, 30):
+        maze[j][2] = 0
+        maze[j][13] = 0
+        maze[j][16] = 0
+        maze[j][27] = 0
+
+    return maze
 
 
 def start_screen(screen):
     # Set up the window
-    # window_width = 640
-    # window_height = 640
-    # window = pygame.display.set_mode((window_width, window_height))
-    pygame.display.set_caption("Pac-Man Maze")
-
+    pygame.display.set_caption("Pac-Man")
     screen.fill(BLACK)
-    draw_maze()
-    # Cap the frame rate
     clock.tick(FPS)
-    # x = 0
-    # y = 0
-    # while x < WIDTH:
-    #     for event in pygame.event.get():
-    #         if event.type == pygame.QUIT:
-    #             pygame.quit()
-    #             sys.exit()
-    #         if event.type == pygame.KEYDOWN:
-    #             x += 10
-    #             y += 10
-    #             draw_pacman(x, y, screen, "right")
-    #             pygame.display.update()
 
 
-def draw_maze():
+def draw_maze(maze):
     screen.fill(BLACK)
-    # Create a matrix of 1s using a list comprehension
-    maze = [[1] * MAZE_WIDTH for _ in range(MAZE_HEIGHT)]
-    for i in range(1, 13):
-        maze[1][i] = 0
-        maze[1][14 + i] = 0
-    for j in range(2, 5):
-        maze[j][1] = 0
-        maze[j][6] = 0
-        maze[j][12] = 0
-        maze[j][15] = 0
-        maze[j][21] = 0
-        maze[j][26] = 0
-
-    # Draw the maze
+    # Draw the maze pathways
     for row in range(MAZE_HEIGHT):
         for col in range(MAZE_WIDTH):
             if maze[row][col] == 0:
@@ -79,19 +139,49 @@ def draw_maze():
                     WHITE,
                     (col * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE),
                 )
-            else:
-                # Draw an empty space
-                # pygame.draw.rect(screen, WHITE, (col * cell_size, row * cell_size, cell_size, cell_size))
-                pass
-
-    # Update the display
-    # pygame.display.flip()
 
 
-def draw_pacman():
-    # player_rect = pygame.Rect(x, y, CELL_SIZE, CELL_SIZE)
-    pygame.draw.rect(screen, WHITE, player_rect)
+def draw_pacman(player_rect):
     screen.blit(pacman, player_rect)
+
+
+def get_pacman_cell(player_rect):
+    return (player_rect.x // CELL_SIZE, player_rect.y // CELL_SIZE)
+
+
+def get_maze_cell_from_pixel(x, y):
+    return (x // CELL_SIZE, y // CELL_SIZE)
+
+
+def is_valid_pixel(x, y, maze):
+    """
+    x and y are floats
+    i and j are ints
+    cell is valid if it's not a wall and not out of bounds
+    cell is a wall if it's a 1
+    """
+    i = int(x // CELL_SIZE)
+    j = int(y // CELL_SIZE)
+    return 0 <= i < MAZE_WIDTH and 0 <= j < MAZE_HEIGHT and maze[j][i] != 1
+
+
+def is_valid_cell(x, y, maze):
+    """
+    Let dx = dy = cell size
+    Let dx3 = dy3 = one third of the cell size floating point
+    A pacman location is considered valid if these 4 points are all valid:
+    (x + dx3, y + dy3)
+    (x + 2 * dx3, y + dy3)
+    (x + dx3, y + 2 * dy3)
+    (x + 2 * dx3, y + 2 * dy3))
+    """
+    dx3 = dy3 = CELL_SIZE / 3
+    return (
+        is_valid_pixel(x + dx3, y + dy3, maze)
+        and is_valid_pixel(x + dx3, y + dy3, maze)
+        and is_valid_pixel(x + dx3, y + dy3, maze)
+        and is_valid_pixel(x + dx3, y + dy3, maze)
+    )
 
 
 def wait_for_key():
@@ -108,15 +198,26 @@ def wait_for_key():
 def run():
     running = True
     countdown_timer = 60
-    player_speed = 1
+    player_speed = 2
     game_started = False
-    draw_maze()
-    draw_pacman()
-    space_pressed = False
+    maze = create_maze()
+    player_rect = get_initial_player_rect()
+    draw_maze(maze)
+    draw_pacman(player_rect)
+    # space_pressed = False
     pygame.display.flip()
+    wait_for_key()
 
     while running:
+        # Cap the frame rate
+        clock.tick(FPS)
+        # Countdown Timer Logic
+        countdown_timer -= 1 / FPS  # Decrease the timer based on the frame rate
+        if countdown_timer <= 0:
+            break
+            # running = False
         for event in pygame.event.get():
+            # Check if the user closed the window
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.KEYDOWN:
@@ -130,84 +231,35 @@ def run():
 
         keys = pygame.key.get_pressed()
 
-        # Move the player
-        # player_rect.x += (keys[pygame.K_RIGHT] - keys[pygame.K_LEFT]) * player_speed
-        # player_rect.y += (keys[pygame.K_DOWN] - keys[pygame.K_UP]) * player_speed
-
         if keys:
-            for key in keys:
-                if key in arrows:
-                    if key == pygame.K_RIGHT:
-                        player_rect.x += player_speed
-                    elif key == pygame.K_LEFT:
-                        player_rect.x -= player_speed
-                    elif key == pygame.K_UP:
-                        player_rect.y -= player_speed
-                    elif key == pygame.K_DOWN:
-                        player_rect.y += player_speed
-                    # Ensure the player stays within the screen boundaries
-                    player_rect.x = max(
-                        0, min(player_rect.x, WIDTH - player_rect.width)
-                    )
-                    player_rect.y = max(
-                        0, min(player_rect.y, HEIGHT - player_rect.height)
-                    )
-                    draw_maze()
-                    draw_pacman()
-                    pygame.display.flip()
-        # pygame.display.update()
-        # Cap the frame rate
-        clock.tick(FPS)
-        # Countdown Timer Logic
-        countdown_timer -= 1 / FPS  # Decrease the timer based on the frame rate
-        if countdown_timer <= 0:
-            running = False
+            update = False
+            x, y = player_rect.x, player_rect.y
+            if keys[pygame.K_RIGHT]:
+                x += player_speed
+                update = True
+            elif keys[pygame.K_LEFT]:
+                x -= player_speed
+                update = True
+            elif keys[pygame.K_UP]:
+                y -= player_speed
+                update = True
+            elif keys[pygame.K_DOWN]:
+                y += player_speed
+                update = True
+            # q quits the game
+            elif keys[pygame.K_q]:
+                running = False
+            if not update:
+                continue
+            if not is_valid_cell(x, y, maze):
+                continue
+            player_rect.x = x
+            player_rect.y = y
+            draw_maze(maze)
+            draw_pacman(player_rect)
+            pygame.display.flip()
 
 
-start_screen(screen)
-run()
-# wait_for_key()
-
-"""
-    # Define the maze size
-    maze_width = 12
-    maze_height = 12
-
-    # Define the maze layout
-    maze = [
-        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-        [1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1],
-        [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
-        [1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1],
-        [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
-        [1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1],
-        [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
-        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    ]
-
-    # Define the maze cell size
-    # cell_size = window_width // maze_width
-    cell_size = WIDTH // maze_width
-
-    # Draw the maze
-    for row in range(maze_height):
-        for col in range(maze_width):
-            if maze[row][col] == 1:
-                # Draw a wall
-                pygame.draw.rect(
-                    screen,
-                    BLACK,
-                    (col * cell_size, row * cell_size, cell_size, cell_size),
-                )
-            else:
-                # Draw an empty space
-                pygame.draw.rect(screen, WHITE, (col * cell_size, row * cell_size, cell_size, cell_size))
-                
-    # Update the display
-    pygame.display.flip()
-"""
+if __name__ == "__main__":
+    start_screen(screen)
+    run()
