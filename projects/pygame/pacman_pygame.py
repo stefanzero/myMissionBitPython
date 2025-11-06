@@ -11,6 +11,7 @@ WIDTH, HEIGHT = 1200, 1200
 MAZE_WIDTH = 32
 MAZE_HEIGHT = 32
 CELL_SIZE = WIDTH // MAZE_WIDTH
+DX2 = CELL_SIZE // 2
 # Define the colors
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -156,7 +157,7 @@ def draw_dots(dots):
 
 
 def eat_dots(dots, player_rect):
-    i, j = get_maze_cell_from_pixel(player_rect.x, player_rect.y)
+    i, j = get_maze_cell_from_pixel(player_rect.x + DX2, player_rect.y + DX2)
     dot_found = False
     if dots[j][i] == 0:
         dot_found = True
