@@ -1,3 +1,4 @@
+import asyncio
 import pygame
 import sys
 import os
@@ -19,7 +20,7 @@ SQUARE_SIZE = 200
 BOARD_WIDTH = 3 * SQUARE_SIZE + 4 * LINE_WIDTH
 BOARD_HEIGHT = 3 * SQUARE_SIZE + 4 * LINE_WIDTH
 BOARD_LEFT_MARGIN = (WIDTH - BOARD_WIDTH) // 2
-BOARD_TOP_MARGIN = TITLE_HEIGHT
+BOARD_TOP_MARGIN = TITLE_HEIGHT + TITLE_HEIGHT
 BOARD_ROWS = 3
 BOARD_COLS = 3
 CIRCLE_RADIUS = 60
@@ -37,7 +38,9 @@ RED = (255, 0, 0)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 BG_COLOR = (107, 230, 224)
-TITLE_COLOR = (162, 107, 230)
+# TITLE_BG_COLOR = (162, 107, 230)
+TITLE_BG_COLOR = (95, 30, 174)
+TITLE_COLOR = WHITE
 BOARD_COLOR = (113, 125, 141)
 X_COLOR = (230, 106, 112)
 O_COLOR = (174, 230, 106)
@@ -48,6 +51,9 @@ LINE_COLOR = (255, 255, 255)
 CIRCLE_COLOR = (239, 231, 200)
 CROSS_COLOR = (66, 66, 66)
 
+arial_30 = pygame.font.Font("arial.ttf", size=30)
+arial_30_bold = pygame.font.SysFont("arial", 30, bold=True)
+
 
 def create_screen():
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -57,10 +63,11 @@ def create_screen():
 
 
 def draw_title(screen):
-    title_font = pygame.font.Font(None, TITLE_FONT_SIZE)
+    # title_font = pygame.font.Font(None, TITLE_FONT_SIZE)
+    title_font = arial_30_bold
     title_text = title_font.render("TIC TAC TOE", True, TITLE_COLOR)
     title_rect = title_text.get_rect(center=(TITLE_WIDTH // 2, TITLE_HEIGHT // 2))
-    pygame.draw.rect(screen, TITLE_COLOR, (0, 0, TITLE_WIDTH, TITLE_HEIGHT))
+    pygame.draw.rect(screen, TITLE_BG_COLOR, (0, 0, TITLE_WIDTH, TITLE_HEIGHT))
     screen.blit(title_text, title_rect)
 
 
@@ -229,10 +236,11 @@ def check_win(board):
     return None
 
 
-def run():
+async def main():
+
     screen = create_screen()
-    draw_title(screen)
     draw_board(screen)
+    draw_title(screen)
     board = Board()
     pygame.display.flip()
     running = True
@@ -240,14 +248,17 @@ def run():
     game_started = False
     winner = None
     while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
+
+        # for event in pygame.event.get():
+        #     if event.type == pygame.QUIT:
+        #         pygame.quit()
+        #         sys.exit()
         for event in pygame.event.get():
             # Check if the user closed the window
             if event.type == pygame.QUIT:
-                running = False
+                pygame.quit()
+                sys.exit()
+                # running = False
             elif event.type == pygame.KEYDOWN:
                 if game_started:
                     game_started = True  # Set the flag to True to avoid calling start_screen repeatedly
@@ -267,15 +278,20 @@ def run():
                     current_marker = "O" if current_marker == "X" else "X"
                     update = True
         if not update:
+            await asyncio.sleep(0)  # Let other tasks run
             continue
 
         draw_board(screen)
+        draw_title(screen)
         winner = check_win(board)
         draw_markers(board, screen)
         if winner:
             print(f"Player {winner} wins!")
         pygame.display.flip()
+        await asyncio.sleep(0)  # Let other tasks run
 
 
-if __name__ == "__main__":
-    run()
+# This is the program entry point
+asyncio.run(main())
+# if __name__ == "__main__":
+#     run()
