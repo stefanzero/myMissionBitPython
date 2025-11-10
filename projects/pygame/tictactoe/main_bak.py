@@ -588,7 +588,7 @@ async def main():
             elif event.type == pygame.KEYDOWN or pygame.MOUSEBUTTONDOWN:
                 if not game_started:
                     game_started = True  # Set the flag to True to avoid calling start_screen repeatedly
-                    continue  # Skip the rest of the loop until the game has started
+                    # continue  # Skip the rest of the loop until the game has started
 
         update = False
         keys = pygame.key.get_pressed()
