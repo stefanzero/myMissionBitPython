@@ -11,7 +11,11 @@ pygame.init()
 NUM_ROWS = 7
 NUM_COLS = 7
 
-WIDTH, HEIGHT = 1000, 1200
+# 1.83
+BROWSER_ASPECT_RATIO = 1980 / 1080
+WIDTH, HEIGHT = 1200, 1200
+# HEIGHT = 1200
+# WIDTH = int(HEIGHT * BROWSER_ASPECT_RATIO)
 CAPTION = "Connect 4"
 TITLE_WIDTH = WIDTH
 TITLE_HEIGHT = 100
@@ -32,7 +36,8 @@ BOARD_LEFT_MARGIN = (WIDTH - BOARD_WIDTH) // 2
 BOARD_TOP_MARGIN = TITLE_HEIGHT + (BODY_HEIGHT - BOARD_HEIGHT) // 2
 BOARD_ROWS = NUM_ROWS
 BOARD_COLS = NUM_COLS
-CIRCLE_RADIUS = 30
+# CIRCLE_RADIUS = 30
+CIRCLE_RADIUS = SQUARE_SIZE // 3
 # CIRCLE_WIDTH = 15
 CIRCLE_WIDTH = CIRCLE_RADIUS
 # CROSS_WIDTH = 25
@@ -45,7 +50,9 @@ BLUE = (0, 0, 255)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GREEN = (0, 255, 0)
+KHAKI = (240, 230, 140)
 BG_COLOR = (107, 230, 224)
+SELECTABLE_COLOR = KHAKI
 BUTTON_BG_COLOR = pygame.Color(0, 0, 0)
 BUTTON_BG_COLOR.hsla = (177, 71, 50, 1)
 BUTTON_HOVER_BG_COLOR = pygame.Color(0, 0, 0)
@@ -55,13 +62,7 @@ TITLE_BG_COLOR = (95, 30, 174)
 FOOTER_BG_COLOR = TITLE_BG_COLOR
 TITLE_COLOR = WHITE
 BOARD_COLOR = (113, 125, 141)
-X_COLOR = (230, 106, 112)
-O_COLOR = (174, 230, 106)
-LINE_COLOR = (23, 145, 135)
-LINE_COLOR = BG_COLOR
 LINE_COLOR = (255, 255, 255)
-CIRCLE_COLOR = (239, 231, 200)
-CROSS_COLOR = (66, 66, 66)
 
 # arial_30 = pygame.font.Font("arial.ttf", size=30)
 TITLE_FONT_FAMILY = "arial"
@@ -97,7 +98,7 @@ def draw_title(screen):
         The screen to draw the title on.
 
     """
-    title_text = TITLE_FONT.render("CONNECT 4", True, TITLE_COLOR)
+    title_text = TITLE_FONT.render(CAPTION, True, TITLE_COLOR)
     title_rect = title_text.get_rect(center=(TITLE_WIDTH // 2, TITLE_HEIGHT // 2))
     pygame.draw.rect(screen, TITLE_BG_COLOR, (0, 0, TITLE_WIDTH, TITLE_HEIGHT))
     screen.blit(title_text, title_rect)
@@ -377,12 +378,12 @@ class Board:
             )
             x += SQUARE_SIZE + LINE_WIDTH
 
-        # draw the clickable squares
+        # set the properties of the clickable squares
         for col in range(NUM_COLS):
             self.squares[col][0].marker = marker
-            self.squares[col][0].highlight = True
+            self.squares[col][0].selectable = True
 
-        # draw the markers
+        # draw the squares and markers
         for row in range(NUM_ROWS):
             for col in range(NUM_COLS):
                 square = self.squares[col][row]
@@ -411,7 +412,7 @@ class Board:
                         return marker  # return the marker if there is a winner
         # check for vertical win
         for col in range(NUM_COLS):
-            for row in range(NUM_ROWS - 3):
+            for row in range(1, NUM_ROWS - 3):
                 marker = self.squares[col][row].marker
                 if marker:  # if there is a marker
                     if (
@@ -427,7 +428,7 @@ class Board:
                         return marker  # return the marker if there is a winner
         # check for downward diagonal win
         for col in range(NUM_COLS - 3):
-            for row in range(NUM_ROWS - 3):
+            for row in range(1, NUM_ROWS - 4):
                 marker = self.squares[col][row].marker
                 if marker:  # if there is a marker
                     if (
@@ -442,17 +443,17 @@ class Board:
                         return marker  # return the marker if there is a winner
         # check for upward diagonal win
         for col in range(NUM_COLS - 3):
-            for row in range(NUM_ROWS - 3):
+            for row in range(NUM_ROWS - 1, NUM_ROWS - 4, -1):
                 marker = self.squares[col][row].marker
                 if marker:  # if there is a marker
                     if (
-                        marker == self.squares[col - 1][row + 1].marker
-                        and marker == self.squares[col - 2][row + 2].marker
-                        and marker == self.squares[col - 3][row + 3].marker
+                        marker == self.squares[col + 1][row - 1].marker
+                        and marker == self.squares[col + 2][row - 2].marker
+                        and marker == self.squares[col + 3][row - 3].marker
                     ):
                         # add highlight to the winning diagonal
                         for i in range(4):
-                            self.squares[col - i][row + i].highlight = True
+                            self.squares[col + i][row - i].highlight = True
                         self.winner = marker
                         return marker  # return the marker if there is a winner
         return None  # return None if there is no winner
@@ -460,7 +461,6 @@ class Board:
     def handle_click(self, x, y):
         """
         only row 0 represents columns that can be clicked
-
         """
         row = 0
         for col in range(NUM_COLS):
@@ -500,6 +500,7 @@ class Square:
         # marker can be None, RED, or BLUE
         self.marker = None
         self.highlight = False
+        self.selectable = False
 
     def point_in_square(self, x, y):
         """
@@ -533,7 +534,9 @@ class Square:
         if not self.marker:
             return
 
-        if self.highlight:
+        if self.selectable:
+            color = SELECTABLE_COLOR
+        elif self.highlight:
             color = BG_COLOR
         else:
             color = BLACK
@@ -604,6 +607,7 @@ async def main():
     update = False
     while running:
         for event in pygame.event.get():
+            # print(event)
             # Check if the user closed the window
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -615,6 +619,7 @@ async def main():
                 or event.type == pygame.FINGERDOWN
             ):
                 if not game_started:
+                    print("Game started")
                     game_started = True
                     # Skip the rest of the loop to get next event
                     continue
@@ -629,20 +634,20 @@ async def main():
                 button.handle_event(event, screen)
             # handle a mouse click or touch event only if the game is still in play
             elif not board.winner and (
-                event.type == pygame.MOUSEBUTTONUP or event.type == pygame.FINGERDOWN
+                event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.FINGERDOWN
             ):
                 x, y = None, None
-                if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     x, y = event.pos
                 elif event.type == pygame.FINGERDOWN:
                     x = int(event.x * screen.get_height())
                     y = int(event.y * screen.get_width())
                 if x and y:
                     square = board.handle_click(x, y)
-                    x, y = None, None
-                    # update the screen if the user clicked on an empty square
+                    # update the screen if the user clicked on a selectable square
                     if square:
                         square.marker = current_marker
+                        # update the current player
                         current_marker = BLUE if current_marker == RED else RED
                         # after a move, check if there is a winner
                         if board.check_winner():
@@ -659,6 +664,7 @@ async def main():
                 draw_footer(screen, button)
                 pygame.display.flip()
 
+            # Let other tasks run
             await asyncio.sleep(0)
 
 
