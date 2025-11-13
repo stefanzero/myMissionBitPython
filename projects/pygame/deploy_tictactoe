@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# run this to deploy the main.py python script in the tictactoe 
+# folder to the web using pygbag
+
+# must first activate .venv
+
+pygbag tictactoe

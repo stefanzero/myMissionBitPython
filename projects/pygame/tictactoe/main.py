@@ -234,7 +234,7 @@ class Button:
         surface.blit(text_surface, text_rect)
 
     # return True if the hover state changes or button was clicked
-    def update(self, event):
+    def update(self, event, screen):
         """
         Update the button state based on the given event.
 
@@ -255,14 +255,19 @@ class Button:
         ):  # Left mouse button
             if self.rect.collidepoint(event.pos):
                 return True
-        if event.type == pygame.MOUSEMOTION:
+        elif event.type == pygame.MOUSEMOTION:
             is_hovered = self.rect.collidepoint(event.pos)
             if is_hovered != self.is_hovered:
                 self.is_hovered = is_hovered
                 return True
+        elif event.type == pygame.FINGERDOWN:
+            x = int(event.x * screen.get_height())
+            y = int(event.y * screen.get_width())
+            if self.rect.collidepoint(x, y):
+                return True
         return False
 
-    def handle_event(self, event):
+    def handle_event(self, event, screen):
         """
         Handle events related to the button.
 
@@ -274,10 +279,16 @@ class Button:
         """
         if event.type == pygame.MOUSEMOTION:
             self.is_hovered = self.rect.collidepoint(event.pos)
-        if (
+        elif (
             event.type == pygame.MOUSEBUTTONDOWN and event.button == 1
         ):  # Left mouse button
             if self.rect.collidepoint(event.pos):
+                if self.action:
+                    self.action()
+        elif event.type == pygame.FINGERDOWN:
+            x = int(event.x * screen.get_height())
+            y = int(event.y * screen.get_width())
+            if self.rect.collidepoint(x, y):
                 if self.action:
                     self.action()
 
@@ -512,6 +523,22 @@ class Board:
             return True
         return False
 
+    def check_draw(self):
+        """
+        Check if the game is a draw.
+
+        This function checks if all the squares have markers
+        and returns True if there is a draw, False otherwise.
+
+        Returns:
+            bool: True if the game is a draw, False otherwise
+        """
+        for row in range(3):
+            for col in range(3):
+                if not self.squares[row][col].marker:
+                    return False
+        return not self.check_winner()
+
     def handle_click(self, x, y):
         """
         Handle a click event on the board.
@@ -585,10 +612,15 @@ async def main():
                 pygame.quit()
                 sys.exit()
             # Check if the user pressed a key or clicked the mouse
-            elif event.type == pygame.KEYDOWN or pygame.MOUSEBUTTONDOWN:
+            if (
+                event.type == pygame.KEYDOWN
+                or event.type == pygame.MOUSEBUTTONDOWN
+                or event.type == pygame.FINGERDOWN
+            ):
                 if not game_started:
-                    game_started = True  # Set the flag to True to avoid calling start_screen repeatedly
-                    continue  # Skip the rest of the loop until the game has started
+                    game_started = True
+                    # Skip the rest of the loop to get next event
+                    continue
 
         update = False
         keys = pygame.key.get_pressed()
@@ -596,13 +628,20 @@ async def main():
         if keys[pygame.K_q] and not browser:
             running = False
         # update the screen if the button is clicked or hovered
-        if button.update(event):
+        if button.update(event, screen):
             update = True
-            button.handle_event(event)
-        # handle a mouse click only if the game is still in play
-        elif not board.winner and event.type == pygame.MOUSEBUTTONDOWN:
-            if event.button == 1:  # Left click
+            button.handle_event(event, screen)
+        # handle a mouse click or touch event only if the game is still in play
+        elif not board.winner and (
+            event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.FINGERDOWN
+        ):
+            x, y = None, None
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 x, y = event.pos
+            elif event.type == pygame.FINGERDOWN:
+                x = int(event.x * screen.get_height())
+                y = int(event.y * screen.get_width())
+            if x and y:
                 square = board.handle_click(x, y)
                 # update the screen if the user clicked on an empty square
                 if square and square.marker is None:
@@ -611,6 +650,8 @@ async def main():
                     # after a move, check if there is a winner
                     if board.check_winner():
                         print(f"Player {board.winner} wins!")
+                    elif board.check_draw():
+                        print("It's a draw!")
                     update = True
 
         # the update flag prevents unnecessary redraws

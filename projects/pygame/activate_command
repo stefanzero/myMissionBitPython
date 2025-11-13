@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# echo "source ../../.venv/bin/activate"
+echo "paste the command and enter"
+echo "source ../../.venv/bin/activate" | pbcopy
