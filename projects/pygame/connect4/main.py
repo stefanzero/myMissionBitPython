@@ -396,7 +396,7 @@ class Board:
         """
         # check for horizontal win
         for row in range(1, NUM_ROWS):
-            for col in range(NUM_COLS - 4):
+            for col in range(NUM_COLS - 3):
                 marker = self.squares[col][row].marker
                 if marker:  # if there is a marker
                     if (
